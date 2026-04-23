@@ -1,7 +1,7 @@
 package recursion
 
 import (
-	"github.com/gustavbagger/primeSieve/primality"
+	"github.com/gustavbagger/ArithProg/primality"
 )
 
 func (cfg *Config) recursionExponent(
@@ -14,7 +14,7 @@ func (cfg *Config) recursionExponent(
 	if currentLog > optSieveBound {
 		return
 	}
-	_, valid := primality.ValidExponentSet192(indexes, exponents, allValues)
+	_, valid := primality.ValidExponentSet(indexes, exponents, allValues)
 	if valid {
 		cfg.handleSuccess(indexes, exponents)
 
