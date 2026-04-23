@@ -10,8 +10,8 @@ import (
 	"time"
 
 	pr "github.com/fxtlabs/primes"
-	"github.com/gustavbagger/primeSieve/filter"
-	"github.com/gustavbagger/primeSieve/recursion"
+	"github.com/gustavbagger/ArithProg/filter"
+	"github.com/gustavbagger/ArithProg/recursion"
 )
 
 func computePrimeCutoff(boundLog float64, fullPimeList []int, logs []float64, s, omega int) (int, error) {

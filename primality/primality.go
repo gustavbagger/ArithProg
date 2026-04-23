@@ -8,5 +8,5 @@ func ValidExponentSet(indexes, exponents, allValues []int) (uint64, bool) {
 		}
 	}
 	prod += 1
-	return prod, true
+	return prod, true //This should return prod,bool where bool := "prod is a prime power"
 }

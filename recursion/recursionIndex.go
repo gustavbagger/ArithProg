@@ -1,7 +1,7 @@
 package recursion
 
 import (
-	"github.com/gustavbagger/primeSieve/filter"
+	"github.com/gustavbagger/ArithProg/filter"
 )
 
 func (cfg *Config) RecursionIndex(
