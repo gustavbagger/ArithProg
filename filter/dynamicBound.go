@@ -9,21 +9,25 @@ var C float64 = 1.4193747081548531
 
 var PrimeListUpperBound int = 1 << 20
 
-func DeltaSum(list []int) float64 {
+func DeltaSum(list []int, gContribution float64) float64 {
 	var sum float64
 	for _, p := range list {
 		sum -= 1.0 / float64(p)
 	}
-	return sum + 1
+	return sum + 1 - gContribution
 }
 
-func InitBestS(omegaMax int, primeList []int) []int {
+func Triangle(m, r, s int, delta float64) float64 {
+	return float64(2+m*r+s-1) / delta
+}
+
+func InitBestS(omegaMax int, primeList []int, gContribution float64) []int {
 	bestS := make([]int, omegaMax+1)
 	for omega := 1; omega <= omegaMax; omega++ {
 		sBest := 0
 		currentBest := float64(int(1) << (omega + 1))
 		for s := 1; s <= omega; s++ {
-			delta := DeltaSum(primeList[omega-s : omega])
+			delta := DeltaSum(primeList[omega-s:omega], gContribution)
 			if delta <= 0.0 {
 				break
 			}
