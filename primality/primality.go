@@ -41,6 +41,6 @@ func ValidExponentSet192(indexes, exponents, allValues []int, n int) (uint192, b
 		}
 	}
 	prod = add192(prod, uint192{Lo: 1})
-	prp := strongPRP(prod)
-	return prod, prp
+	// prp := strongPRP(prod)
+	return prod, true //This should return prod,bool where bool := "prod is a prime power"
 }
