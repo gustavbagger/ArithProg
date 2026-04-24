@@ -21,17 +21,19 @@ func Triangle(m, r, s int, delta float64) float64 {
 	return float64(2+m*r+s-1) / delta
 }
 
-func InitBestS(omegaMax int, primeList []int, gContribution float64) []int {
+func InitBestR(omegaMax, s int, primeList []int, gContribution, gProd float64) []int {
 	bestS := make([]int, omegaMax+1)
 	for omega := 1; omega <= omegaMax; omega++ {
 		sBest := 0
-		currentBest := float64(int(1) << (omega + 1))
-		for s := 1; s <= omega; s++ {
-			delta := DeltaSum(primeList[omega-s:omega], gContribution)
+		currentBest := 4.0 * Triangle(4, 0, s, 1.0-gContribution) * float64(int(1)<<(omega+1))
+		for r := 1; r <= omega; r++ {
+			delta := DeltaSum(primeList[omega-r:omega], gContribution)
 			if delta <= 0.0 {
 				break
 			}
-			currentTry := (2.0 + float64(s-1)/delta) * float64(int(1)<<(omega-s)) * math.Sqrt(2*C)
+			currentTriangle := Triangle(4, r, s, delta)
+			currentTry := 4.0 * currentTriangle * gProd * float64(int(1)<<(4*(omega-r)))
+
 			if currentTry < currentBest {
 				currentBest = currentTry
 
@@ -44,21 +46,27 @@ func InitBestS(omegaMax int, primeList []int, gContribution float64) []int {
 	return bestS
 }
 
-func OptSieveBoundLog(omega, s int, indexes, primeList []int, boundLog float64) float64 {
-	if s == 0 || len(indexes) < s {
+func OptSieveBoundLog(omega, r, s, n int, indexes, primeList []int, gContribution, gProd, boundLog float64) float64 {
+	if r == 0 || len(indexes) < r {
 		return boundLog
 	}
-	return math.Min(boundLog, PSieveLog(omega, s, indexes, primeList))
+	return math.Min(boundLog, PSieveLog(omega, r, s, n, indexes, primeList, gContribution, gProd))
 }
 
-func PSieveLog(omega, s int, indexes, primeList []int) float64 {
-	last := make([]int, s)
-	for i := 0; i < s; i++ {
-		last[i] = primeList[indexes[omega-s+i]]
+func PSieveLog(omega, r, s, n int, indexes, primeList []int, gContribution, gProd float64) float64 {
+	last := make([]int, r)
+	for i := 0; i < r; i++ {
+		last[i] = primeList[indexes[omega-r+i]]
 	}
-	delta := DeltaSum(last)
+	delta := DeltaSum(last, gContribution)
 	if delta <= 0.0 {
 		return 0.0
 	}
-	return (16.0)*(math.Log(2*delta+float64(s-1))+float64(omega-s)*math.Log(2.0)-math.Log(delta)) + 8.0*math.Log(2.0*C)
+
+	return 2.0 *
+		(math.Log(4) +
+			math.Log(Triangle(4, r, s, delta)) +
+			math.Log(gProd) +
+			4.0*float64(omega-r)*math.Log(2.0))
+
 }

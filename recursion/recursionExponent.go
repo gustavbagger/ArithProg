@@ -14,7 +14,7 @@ func (cfg *Config) recursionExponent(
 	if currentLog > optSieveBound {
 		return
 	}
-	_, valid := primality.ValidExponentSet(indexes, exponents, allValues)
+	_, valid := primality.ValidExponentSet(indexes, exponents, allValues, cfg.n)
 	if valid {
 		cfg.handleSuccess(indexes, exponents)
 

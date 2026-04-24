@@ -15,7 +15,16 @@ func (cfg *Config) RecursionIndex(
 
 	if currentDepth == cfg.omega {
 
-		optSieveBound := filter.OptSieveBoundLog(cfg.omega, cfg.s, indexes, primeList, boundLog)
+		optSieveBound := filter.OptSieveBoundLog(
+			cfg.omega,
+			cfg.r,
+			cfg.s,
+			cfg.n,
+			indexes,
+			primeList,
+			cfg.gContribution,
+			cfg.gProd,
+			boundLog)
 
 		cfg.recursionExponent(
 			0,

@@ -14,81 +14,6 @@ import (
 	"github.com/gustavbagger/ArithProg/recursion"
 )
 
-func computePrimeCutoff(boundLog float64, fullPimeList []int, logs []float64, s, omega int) (int, error) {
-
-	// log of product of smallest ω−1 primes
-	baseLog := 0.0
-	for i := 0; i < omega-1; i++ {
-		baseLog += logs[i]
-	}
-	indexes := make([]int, omega)
-	for i := 0; i < omega-1; i++ {
-		indexes[i] = i
-	}
-
-	indexes[omega-1] = len(fullPimeList) - 1
-	p := fullPimeList[indexes[omega-1]]
-	logMin := baseLog + math.Log(float64(p))
-	if logMin <= boundLog &&
-		logMin <= filter.PSieveLog(omega, s, indexes, fullPimeList) {
-		// need more primes
-		return 0, errors.New("Need more primes initiated")
-	}
-
-	// Try primes from largest to smallest
-	for idx := len(fullPimeList) - 2; idx >= omega-1; idx-- {
-		p = fullPimeList[idx]
-		logMin = baseLog + math.Log(float64(p))
-
-		indexes[omega-1] = idx
-
-		sieveBound := filter.PSieveLog(omega, s, indexes, fullPimeList)
-
-		if logMin <= boundLog && logMin <= sieveBound {
-			return p, nil
-		}
-	}
-
-	return 0, errors.New("Interval is empty")
-}
-
-func printIntervals(omegaMax, omegaMin int) {
-	//careful here, we need len(primeList)>= omega
-	primeList := pr.Sieve(500)
-	for omega := omegaMax; omega >= omegaMin; omega-- {
-		sBest := 0
-		deltaBest := 1.0
-		currentBest := float64(int(1) << (omega + 1))
-		for s := 1; s <= omega; s++ {
-			delta := filter.DeltaSum(primeList[omega-s : omega])
-			if delta <= 0.0 {
-				break
-			}
-
-			currentTry := (2.0 + float64(s-1)/delta) * float64(int(1)<<(omega-s)) * math.Sqrt(2*filter.C)
-			if currentTry < currentBest {
-				currentBest = currentTry
-				sBest = s
-				deltaBest = delta
-			}
-		}
-		var sum float64
-		for _, p := range primeList[:omega] {
-			sum += math.Log(float64(p))
-		}
-
-		fmt.Printf(
-			"%5.1e>p>%5.1e ---- o,s,d = %v,%v,%2.2f\n",
-			math.Pow(currentBest, 16),
-			math.Pow(math.E, sum),
-			omega,
-			sBest,
-			deltaBest,
-		)
-
-	}
-}
-
 func search(omega, a, b int, path string) error {
 	file, _ := os.Create(path)
 
@@ -102,11 +27,17 @@ func search(omega, a, b int, path string) error {
 	for i, p := range fullPrimeList {
 		logs[i] = math.Log(float64(p))
 	}
-	s := filter.InitBestS(omega, fullPrimeList)[omega]
+	//gContribution
+	n := 8
+	gContribution := float64(n) / math.Pow10(4) // worst case
+	gProd := 1.0                                //Choosing no core, ie g=1
+	s := n                                      //Assuming x^n-1 splits completely
 
-	cfg := recursion.NewConfig(w, buf, omega, s)
+	r := filter.InitBestR(omega, s, fullPrimeList, gContribution, gProd)[omega]
 
-	cutoff, err := computePrimeCutoff(boundLog, fullPrimeList, logs, s, omega)
+	cfg := recursion.NewConfig(w, buf, omega, s, r, n, gContribution, gProd)
+
+	cutoff, err := computePrimeCutoff(boundLog, gContribution, gProd, fullPrimeList, logs, r, s, n, omega)
 	if err != nil {
 		return err
 	}
@@ -148,3 +79,86 @@ func search(omega, a, b int, path string) error {
 	fmt.Println("Time elapsed: ", end.Sub(cfg.Start))
 	return nil
 }
+
+func computePrimeCutoff(
+	boundLog, gContribution, gProd float64,
+	fullPimeList []int,
+	logs []float64,
+	r, s, n, omega int,
+) (int, error) {
+
+	// log of product of smallest ω−1 primes
+	baseLog := 0.0
+	for i := 0; i < omega-1; i++ {
+		baseLog += logs[i]
+	}
+	indexes := make([]int, omega)
+	for i := 0; i < omega-1; i++ {
+		indexes[i] = i
+	}
+
+	indexes[omega-1] = len(fullPimeList) - 1
+	p := fullPimeList[indexes[omega-1]]
+	logMin := baseLog + math.Log(float64(p))
+	if logMin <= boundLog &&
+		logMin <= filter.PSieveLog(omega, r, s, n, indexes, fullPimeList, gContribution, gProd) {
+		// need more primes
+		return 0, errors.New("Need more primes initiated")
+	}
+
+	// Try primes from largest to smallest
+	for idx := len(fullPimeList) - 2; idx >= omega-1; idx-- {
+		p = fullPimeList[idx]
+		logMin = baseLog + math.Log(float64(p))
+
+		indexes[omega-1] = idx
+
+		sieveBound := filter.PSieveLog(omega, r, s, n, indexes, fullPimeList, gContribution, gProd)
+
+		if logMin <= boundLog && logMin <= sieveBound {
+			return p, nil
+		}
+	}
+
+	return 0, errors.New("Interval is empty")
+}
+
+/*
+func printIntervals(omegaMax, omegaMin int) {
+	//careful here, we need len(primeList)>= omega
+	primeList := pr.Sieve(500)
+	for omega := omegaMax; omega >= omegaMin; omega-- {
+		sBest := 0
+		deltaBest := 1.0
+		currentBest := float64(int(1) << (omega + 1))
+		for s := 1; s <= omega; s++ {
+			delta := filter.DeltaSum(primeList[omega-s : omega])
+			if delta <= 0.0 {
+				break
+			}
+
+			currentTry := (2.0 + float64(s-1)/delta) * float64(int(1)<<(omega-s)) * math.Sqrt(2*filter.C)
+			if currentTry < currentBest {
+				currentBest = currentTry
+				sBest = s
+				deltaBest = delta
+			}
+		}
+		var sum float64
+		for _, p := range primeList[:omega] {
+			sum += math.Log(float64(p))
+		}
+
+		fmt.Printf(
+			"%5.1e>p>%5.1e ---- o,s,d = %v,%v,%2.2f\n",
+			math.Pow(currentBest, 16),
+			math.Pow(math.E, sum),
+			omega,
+			sBest,
+			deltaBest,
+		)
+
+	}
+}
+
+*/

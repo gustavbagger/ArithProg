@@ -7,12 +7,16 @@ import (
 )
 
 type Config struct {
-	w     *bufio.Writer
-	buf   []byte
-	Start time.Time
-	Count uint64
-	omega int
-	s     int
+	w             *bufio.Writer
+	buf           []byte
+	Start         time.Time
+	Count         uint64
+	gContribution float64
+	gProd         float64
+	omega         int
+	s             int
+	r             int
+	n             int
 }
 
 func NewConfig(
@@ -20,8 +24,23 @@ func NewConfig(
 	buf []byte,
 	omega int,
 	s int,
+	r int,
+	n int,
+	gContribution float64,
+	gProd float64,
 ) Config {
-	return Config{buf: buf, w: w, Start: time.Now(), Count: 0, omega: omega, s: s}
+	return Config{
+		buf:           buf,
+		w:             w,
+		Start:         time.Now(),
+		Count:         0,
+		omega:         omega,
+		s:             s,
+		r:             r,
+		n:             n,
+		gContribution: gContribution,
+		gProd:         gProd,
+	}
 }
 
 func (cfg *Config) handleSuccess(indexes, exponents []int) {
