@@ -45,6 +45,7 @@ func NewConfig(
 
 func (cfg *Config) handleSuccess(indexes, exponents []int) {
 	cfg.Count++
+
 	if cfg.Count%100000 == 0 {
 		var pivot int
 		for i := 0; i < cfg.omega; i++ {
